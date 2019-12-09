@@ -11,6 +11,11 @@ app = Flask(__name__)
 setup_db(app)
 CORS(app)
 
+STATUS_CODE_SUCCESS = 200
+
+def get_request_data(request):
+    return json.loads(request.data.decode('utf-8'))
+
 '''
 @TODO uncomment the following line to initialize the datbase
 !! NOTE THIS WILL DROP ALL RECORDS AND START YOUR DB FROM SCRATCH
@@ -27,8 +32,15 @@ CORS(app)
     returns status code 200 and json {"success": True, "drinks": drinks} where drinks is the list of drinks
         or appropriate status code indicating reason for failure
 '''
-
-
+@app.route('/drinks')
+def get_drinks():
+    drinks = list(map(Drink.short, Drink.query.all()))
+    # print(drinks.short())
+    result = {
+        "success": True,
+        "drinks": drinks
+    }
+    return jsonify(result)
 '''
 @TODO implement endpoint
     GET /drinks-detail
@@ -48,7 +60,19 @@ CORS(app)
     returns status code 200 and json {"success": True, "drinks": drink} where drink an array containing only the newly created drink
         or appropriate status code indicating reason for failure
 '''
-
+@app.route('/drinks', methods=['POST'])
+def add_drinks():
+    if request.data:
+        request_data = get_request_data(request)
+        print(request_data['recipe'])
+        new_drink = Drink(title=request_data['title'], recipe=json.dumps(request_data['recipe']))
+        Drink.insert(new_drink)
+        drinks = list(map(Drink.long, Drink.query.all()))
+        result = {
+            "success": True,
+            "drinks": drinks
+        }
+        return jsonify(result)
 
 '''
 @TODO implement endpoint
