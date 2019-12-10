@@ -33,9 +33,10 @@ def get_request_data(request):
         or appropriate status code indicating reason for failure
 '''
 @app.route('/drinks')
-def get_drinks():
+@requires_auth('get:drinks-detail')
+def get_drinks(args):
+    print(args)
     drinks = list(map(Drink.short, Drink.query.all()))
-    # print(drinks.short())
     result = {
         "success": True,
         "drinks": drinks
