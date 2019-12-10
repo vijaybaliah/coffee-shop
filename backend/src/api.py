@@ -86,8 +86,22 @@ def add_drinks():
     returns status code 200 and json {"success": True, "drinks": drink} where drink an array containing only the updated drink
         or appropriate status code indicating reason for failure
 '''
-
-
+@app.route('/drinks/<int:id>', methods=['PATCH'])
+def update_drinks(id):
+    if request.data:
+        request_data = get_request_data(request)
+        drink = Drink.query.get(id)
+        if 'title' in request_data:
+            drink.title = request_data['title']
+        if 'recipe' in request_data:
+            drink.recipe = json.dumps(request_data['recipe'])
+        Drink.update(drink)
+        drinks = list(map(Drink.long, [drink]))
+        result = {
+            "success": True,
+            "drinks": drinks
+        }
+        return jsonify(result)      
 '''
 @TODO implement endpoint
     DELETE /drinks/<id>
