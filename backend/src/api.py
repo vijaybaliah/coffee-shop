@@ -65,10 +65,9 @@ def get_drinks(args):
 def add_drinks():
     if request.data:
         request_data = get_request_data(request)
-        print(request_data['recipe'])
         new_drink = Drink(title=request_data['title'], recipe=json.dumps(request_data['recipe']))
         Drink.insert(new_drink)
-        drinks = list(map(Drink.long, Drink.query.all()))
+        drinks = list(map(Drink.long, [new_drink]))
         result = {
             "success": True,
             "drinks": drinks
@@ -112,7 +111,16 @@ def update_drinks(id):
     returns status code 200 and json {"success": True, "delete": id} where id is the id of the deleted record
         or appropriate status code indicating reason for failure
 '''
-
+@app.route('/drinks/<int:id>', methods=['DELETE'])
+def delete_drinks(id):
+    drink = Drink.query.get(id)
+    Drink.delete(drink)
+    drinks = list(map(Drink.long, [drink]))
+    result = {
+        "success": True,
+        "drinks": drinks
+    }
+    return jsonify(result)
 
 ## Error Handling
 '''
