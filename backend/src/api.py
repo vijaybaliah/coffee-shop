@@ -71,10 +71,10 @@ def get_drinks_detail(payload):
 '''
 @app.route('/drinks', methods=['POST'])
 @requires_auth('post:drinks')
-def add_drinks():
+def add_drinks(payload):
     if request.data:
         request_data = get_request_data(request)
-        new_drink = Drink(title=request_data['title'], recipe=json.dumps(request_data['recipe']))
+        new_drink = Drink(title=request_data['title'], recipe=json.dumps([request_data['recipe']]))
         Drink.insert(new_drink)
         drinks = list(map(Drink.long, [new_drink]))
         result = {
@@ -98,14 +98,14 @@ def add_drinks():
 '''
 @app.route('/drinks/<int:id>', methods=['PATCH'])
 @requires_auth('patch:drinks')
-def update_drinks(id):
+def update_drinks(payload, id):
     if request.data and id:
         request_data = get_request_data(request)
         drink = Drink.query.get(id)
         if 'title' in request_data:
             drink.title = request_data['title']
         if 'recipe' in request_data:
-            drink.recipe = json.dumps(request_data['recipe'])
+            drink.recipe = json.dumps([request_data['recipe']])
         Drink.update(drink)
         drinks = list(map(Drink.long, [drink]))
         result = {
@@ -127,7 +127,7 @@ def update_drinks(id):
 '''
 @app.route('/drinks/<int:id>', methods=['DELETE'])
 @requires_auth('delete:drinks')
-def delete_drinks(id):
+def delete_drinks(payload, id):
     if id:
         drink = Drink.query.get(id)
         Drink.delete(drink)
