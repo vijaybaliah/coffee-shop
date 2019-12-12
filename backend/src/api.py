@@ -12,6 +12,8 @@ setup_db(app)
 CORS(app)
 
 STATUS_CODE_SUCCESS = 200
+STATUS_NOT_FOUND = 404
+STATUS_UNPROCESSABLE = 422
 
 def get_request_data(request):
     return json.loads(request.data.decode('utf-8'))
@@ -68,6 +70,7 @@ def get_drinks_detail(payload):
         or appropriate status code indicating reason for failure
 '''
 @app.route('/drinks', methods=['POST'])
+@requires_auth('post:drinks')
 def add_drinks():
     if request.data:
         request_data = get_request_data(request)
@@ -79,6 +82,8 @@ def add_drinks():
             "drinks": drinks
         }
         return jsonify(result)
+    else:
+        abort(STATUS_UNPROCESSABLE)
 
 '''
 @TODO implement endpoint
@@ -92,8 +97,9 @@ def add_drinks():
         or appropriate status code indicating reason for failure
 '''
 @app.route('/drinks/<int:id>', methods=['PATCH'])
+@requires_auth('patch:drinks')
 def update_drinks(id):
-    if request.data:
+    if request.data and id:
         request_data = get_request_data(request)
         drink = Drink.query.get(id)
         if 'title' in request_data:
@@ -106,7 +112,9 @@ def update_drinks(id):
             "success": True,
             "drinks": drinks
         }
-        return jsonify(result)      
+        return jsonify(result)  
+    else:
+        abort(STATUS_NOT_FOUND)   
 '''
 @TODO implement endpoint
     DELETE /drinks/<id>
@@ -118,27 +126,31 @@ def update_drinks(id):
         or appropriate status code indicating reason for failure
 '''
 @app.route('/drinks/<int:id>', methods=['DELETE'])
+@requires_auth('delete:drinks')
 def delete_drinks(id):
-    drink = Drink.query.get(id)
-    Drink.delete(drink)
-    drinks = list(map(Drink.long, [drink]))
-    result = {
-        "success": True,
-        "drinks": drinks
-    }
-    return jsonify(result)
+    if id:
+        drink = Drink.query.get(id)
+        Drink.delete(drink)
+        drinks = list(map(Drink.long, [drink]))
+        result = {
+            "success": True,
+            "drinks": drinks
+        }
+        return jsonify(result)
+    else:
+        abort(STATUS_NOT_FOUND)
 
 ## Error Handling
 '''
 Example error handling for unprocessable entity
 '''
-@app.errorhandler(422)
+@app.errorhandler(STATUS_UNPROCESSABLE)
 def unprocessable(error):
     return jsonify({
                     "success": False, 
-                    "error": 422,
+                    "error": STATUS_UNPROCESSABLE,
                     "message": "unprocessable"
-                    }), 422
+                    }), STATUS_UNPROCESSABLE
 
 '''
 @TODO implement error handlers using the @app.errorhandler(error) decorator
@@ -150,13 +162,13 @@ def unprocessable(error):
                     }), 404
 
 '''
-@app.errorhandler(404)
+@app.errorhandler(STATUS_NOT_FOUND)
 def not_found(error):
     return jsonify({
                     "success": False, 
-                    "error": 404,
+                    "error": STATUS_NOT_FOUND,
                     "message": "resource not found"
-                    }), 404
+                    }), STATUS_NOT_FOUND
 '''
 @TODO implement error handler for 404
     error handler should conform to general task above 
