@@ -147,6 +147,10 @@ def verify_decode_jwt(token):
                 'e': key['e']
             }
 
+    '''
+        Finally we decrypt the jwt with the generated rsa_key, the algorithms we used
+        during auth0 config, audience, and domain
+    '''
     if rsa_key:
         try:
             payload = jwt.decode(
