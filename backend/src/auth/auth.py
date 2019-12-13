@@ -133,9 +133,9 @@ def verify_decode_jwt(token):
         }, 401)
 
     '''
-        It iterates through the list of jwt keys and checks if both the keys matches.
-        If it does we can generate rsa key which is used to decode the jwt which then
-        can be used to read the permissions
+        It iterates through the list of jwt keys and checks if both the
+        keys matches. If it does we can generate rsa key which is used
+        to decode the jwt which then can be used to read the permissions
     '''
     for key in jwks['keys']:
         if key['kid'] == unverified_header['kid']:
@@ -148,8 +148,8 @@ def verify_decode_jwt(token):
             }
 
     '''
-        Finally we decrypt the jwt with the generated rsa_key, the algorithms we used
-        during auth0 config, audience, and domain
+        Finally we decrypt the jwt with the generated rsa_key, the algorithms
+        we used during auth0 config, audience, and domain
     '''
     if rsa_key:
         try:
