@@ -110,11 +110,21 @@ def check_permissions(permission, payload):
 
 
 def verify_decode_jwt(token):
+    '''
+        Gets the public key from auth0
+    '''
     jsonurl = urlopen(f'https://{AUTH0_DOMAIN}/.well-known/jwks.json')
     jwks = json.loads(jsonurl.read())
+
+    '''
+        gets the jwt keys from the token passed in request header
+    '''
     unverified_header = jwt.get_unverified_header(token)
     rsa_key = {}
 
+    '''
+        If keys does not exists then it throws invalid_header error
+    '''
     if 'kid' not in unverified_header:
         raise AuthError({
             'code': 'invalid_header',
@@ -122,6 +132,11 @@ def verify_decode_jwt(token):
             'success': False
         }, 401)
 
+    '''
+        It iterates through the list of jwt keys and checks if both the keys matches.
+        If it does we can generate rsa key which is used to decode the jwt which then
+        can be used to read the permissions
+    '''
     for key in jwks['keys']:
         if key['kid'] == unverified_header['kid']:
             rsa_key = {
